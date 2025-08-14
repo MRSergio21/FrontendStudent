@@ -9,7 +9,7 @@ const Navigation: React.FC = () => {
         <Image src="/img/Group.svg" alt="UEA Logo" width={208} height={65} />
       </div>
       <div className="space-x-4 text-gray-700">
-        <a href="#about" className="text-lg font-medium">
+        <a href="/cemu/home" className="text-lg font-medium">
           ¿QUÉ ES CEMU?
         </a>
         <Link href="/cemu/internships" className="text-lg font-medium">
