@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const Navigation: React.FC = () => {
   return (
@@ -11,9 +12,9 @@ const Navigation: React.FC = () => {
         <a href="#about" className="text-lg font-medium">
           ¿QUÉ ES CEMU?
         </a>
-        <a href="#practices" className="text-lg font-medium">
+        <Link href="/cemu/internships" className="text-lg font-medium">
           OFERTA DE PRÁCTICAS
-        </a>
+        </Link>
       </div>
     </nav>
   );
