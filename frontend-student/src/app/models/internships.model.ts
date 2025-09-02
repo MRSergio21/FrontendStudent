@@ -7,6 +7,11 @@ export interface DegreeMinimalDTO {
   name: string;
 }
 
+export interface DegreeResponseDTO {
+  id: number;
+  name: string;
+}
+
 export interface CompanyMinimalDTO {
   id: number;
   name: string;

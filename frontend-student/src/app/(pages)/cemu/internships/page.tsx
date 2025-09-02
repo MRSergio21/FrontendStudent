@@ -1,10 +1,36 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { useInternshipsQuery } from "@/app/hooks/useInternships";
-import { InternshipResponseDTO } from "@/app/models/internships.model";
+import { useDegreesQuery } from "@/app/hooks/useDegrees";
+import type { InternshipResponseDTO } from "@/app/models/internships.model";
 
 export default function InternshipsPage() {
   const { data: internships, isLoading, error } = useInternshipsQuery();
+  const { data: degrees } = useDegreesQuery();
+
+  const [searchTitle, setSearchTitle] = useState("");
+  const [selectedDegree, setSelectedDegree] = useState("");
+  const [startDateFilter, setStartDateFilter] = useState("");
+  const [endDateFilter, setEndDateFilter] = useState("");
+
+  // Filtrado de prácticas por título, grado y rango de fechas
+  const filteredInternships = useMemo(() => {
+    if (!internships) return [];
+
+    return internships.filter((i) => {
+      const matchesTitle = i.internshipTitle.toLowerCase().includes(searchTitle.toLowerCase());
+      const matchesDegree = selectedDegree
+        ? String(i.degree?.id) === selectedDegree
+        : true;
+
+      const internshipStart = new Date(i.startDate);
+      const matchesStartDate = startDateFilter ? internshipStart >= new Date(startDateFilter) : true;
+      const matchesEndDate = endDateFilter ? internshipStart <= new Date(endDateFilter) : true;
+
+      return matchesTitle && matchesDegree && matchesStartDate && matchesEndDate;
+    });
+  }, [internships, searchTitle, selectedDegree, startDateFilter, endDateFilter]);
 
   if (isLoading) return <p className="text-center py-10">Cargando prácticas...</p>;
   if (error) return <p className="text-center text-red-500">Error cargando datos</p>;
@@ -13,27 +39,50 @@ export default function InternshipsPage() {
     <div className="mx-auto p-20 py-12 bg-white">
       <h1 className="text-3xl text-gray-700 text-center mb-8">Oferta de Prácticas</h1>
 
+      {/* FILTROS */}
       <div className="mb-8 flex flex-col sm:flex-row sm:space-x-4 items-center text-gray-700">
+        {/* Búsqueda por título */}
         <input
           type="text"
-          placeholder="Busque su oferta..."
+          placeholder="Buscar por título..."
           className="border p-2 rounded w-full sm:w-1/3 mb-2 sm:mb-0"
+          value={searchTitle}
+          onChange={(e) => setSearchTitle(e.target.value)}
         />
-        <select className="border p-2 rounded w-full sm:w-1/4 mb-2 sm:mb-0">
-          <option value="">Área</option>
-          <option value="value">Value</option>
+
+        {/* SELECT DE GRADOS */}
+        <select
+          className="border p-2 rounded w-full sm:w-1/4 mb-2 sm:mb-0"
+          value={selectedDegree}
+          onChange={(e) => setSelectedDegree(e.target.value)}
+        >
+          <option value="">Todos los grados</option>
+          {degrees?.map((degree: { id: string | number; name: string }) => (
+            <option key={degree.id} value={String(degree.id)}>
+              {degree.name}
+            </option>
+          ))}
         </select>
-        <input type="date" className="border p-2 rounded w-full sm:w-1/6 mb-2 sm:mb-0" />
-        <input type="date" className="border p-2 rounded w-full sm:w-1/6 mb-2 sm:mb-0" />
-        <label className="flex items-center space-x-2 ml-2">
-          <input type="checkbox" />
-          <span>Oferta Activa</span>
-        </label>
+
+        {/* Rangos de fecha */}
+        <input
+          type="date"
+          className="border p-2 rounded w-full sm:w-1/6 mb-2 sm:mb-0"
+          value={startDateFilter}
+          onChange={(e) => setStartDateFilter(e.target.value)}
+        />
+        <input
+          type="date"
+          className="border p-2 rounded w-full sm:w-1/6 mb-2 sm:mb-0"
+          value={endDateFilter}
+          onChange={(e) => setEndDateFilter(e.target.value)}
+        />
       </div>
 
+      {/* LISTA DE PRÁCTICAS */}
       <div className="space-y-10">
-        {internships?.map((internship: InternshipResponseDTO) => (
-          <div key={internship.id} className="border-b pb-6 text-gray-400">
+        {filteredInternships.map((internship: InternshipResponseDTO) => (
+          <div key={internship.id} className="border-b pb-6 text-gray-700">
             <h2 className="text-2xl font-bold text-blue-700 mb-2">
               {internship.internshipTitle}
             </h2>
@@ -51,22 +100,13 @@ export default function InternshipsPage() {
               {internship.company.name} - {internship.internshipLocation}
             </p>
 
-            <p className="text-gray-700 mb-4 line-clamp-3">
-              {internship.description}
-            </p>
+            <p className="text-gray-700 mb-4 line-clamp-3">{internship.description}</p>
 
             <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
               LEER MÁS
             </button>
           </div>
         ))}
-      </div>
-
-      <div className="flex justify-center mt-10 space-x-2 text-gray-700">
-        <button className="px-3 py-1 border rounded hover:bg-gray-100">1</button>
-        <button className="px-3 py-1 border rounded hover:bg-gray-100">2</button>
-        <button className="px-3 py-1 border rounded hover:bg-gray-100">3</button>
-        <button className="px-3 py-1 border rounded hover:bg-gray-100">Siguiente »</button>
       </div>
     </div>
   );
