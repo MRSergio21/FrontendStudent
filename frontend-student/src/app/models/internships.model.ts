@@ -13,6 +13,7 @@ export interface CompanyMinimalDTO {
 }
 
 export interface InternshipResponseDTO {
+  
   id: number;
   internshipTitle: string;
   internshipLocation: string;

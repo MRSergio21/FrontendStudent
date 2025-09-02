@@ -1,7 +1,8 @@
-import React from 'react';
-import Header from '../components/Template/Header';
-import Footer from '../components/Template/Foooter';
-import Navigation from '../components/Template/Navigation';
+import React from "react";
+import Header from "../components/Template/Header";
+import Footer from "../components/Template/Foooter";
+import Navigation from "../components/Template/Navigation";
+import ReactQueryProvider from "../providers/ReactQueryProvider";
 
 export default function RootLayout({
   children,
@@ -9,11 +10,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
-      <Header />
-      <Navigation />
-      {children}
-      <Footer />
-    </>
+    <html lang="es">
+      <body>
+        <ReactQueryProvider>
+          <Header />
+          <Navigation />
+          {children}
+          <Footer />
+        </ReactQueryProvider>
+      </body>
+    </html>
   );
 }
