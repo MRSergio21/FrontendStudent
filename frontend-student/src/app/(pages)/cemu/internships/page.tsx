@@ -1,67 +1,111 @@
-import Navigation from "@/app/components/Template/Navigation";
+"use client";
 
-interface Internship {
-  id: number;
-  title: string;
-  date: string;
-  entity: string;
-  location?: string;
-  description: string;
-}
+import { useState, useMemo } from "react";
+import Link from "next/link";
+import { useInternshipsQuery } from "@/app/hooks/useInternships";
+import { useDegreesQuery } from "@/app/hooks/useDegrees";
+import type { InternshipResponseDTO } from "@/app/models/internships.model";
 
-const sampleInternships: Internship[] = [
-  {
-    id: 1,
-    title: "Título de la oferta",
-    date: "XX mes, YYYY",
-    entity: "Entidad Convocante - Sede",
-    description:
-      "Ut facilisis quis augue finibus tincidunt. Sed convallis a dui nec accumsan. Nunc cursus ac lacus id consequat. Curabitur non lectus hendrerit, euismod massa vel, tincidunt tortor.",
-  },
-  {
-    id: 2,
-    title: "Título de la oferta",
-    date: "XX mes, YYYY",
-    entity: "Entidad Convocante - Sede",
-    description:
-      "Ut facilisis quis augue finibus tincidunt. Sed convallis a dui nec accumsan. Nunc cursus ac lacus id consequat. Curabitur non lectus hendrerit, euismod massa vel, tincidunt tortor.",
-  },
-];
+export default function InternshipsPage() {
+  const { data: internships, isLoading, error } = useInternshipsQuery();
+  const { data: degrees } = useDegreesQuery();
 
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <div className="text-center mb-8 relative">
-    <h2 className="text-3xl font-bold text-gray-800">{children}</h2>
-    <div className="relative mt-4 flex justify-center">
-      <hr className="border-t border-gray-300 w-full max-w-xs border-t-[1px]" />
-      <div className="absolute left-1/2 transform -translate-x-1/2 bg-yellow-500 rounded-full h-2 w-2 top-[-2.5px]"></div>
-    </div>
-  </div>
-);
+  const [searchTitle, setSearchTitle] = useState("");
+  const [selectedDegree, setSelectedDegree] = useState("");
+  const [startDateFilter, setStartDateFilter] = useState("");
+  const [endDateFilter, setEndDateFilter] = useState("");
 
-export default function InternshipsPage () {
+  // Filtrado de prácticas por título, grado y rango de fechas
+  const filteredInternships = useMemo(() => {
+    if (!internships) return [];
+
+    return internships.filter((i) => {
+      const matchesTitle = i.internshipTitle.toLowerCase().includes(searchTitle.toLowerCase());
+      const matchesDegree = selectedDegree
+        ? String(i.degree?.id) === selectedDegree
+        : true;
+
+      const internshipStart = new Date(i.startDate);
+      const matchesStartDate = startDateFilter ? internshipStart >= new Date(startDateFilter) : true;
+      const matchesEndDate = endDateFilter ? internshipStart <= new Date(endDateFilter) : true;
+
+      return matchesTitle && matchesDegree && matchesStartDate && matchesEndDate;
+    });
+  }, [internships, searchTitle, selectedDegree, startDateFilter, endDateFilter]);
+
+  if (isLoading) return <p className="text-center py-10">Cargando prácticas...</p>;
+  if (error) return <p className="text-center text-red-500">Error cargando datos</p>;
+
   return (
-    <>
-      <div className="max-w-6xl mx-auto p-8">
-        <h1 className="text-3xl font-semibold text-center mb-6">Oferta de Prácticas</h1>
+    <div className="mx-auto p-18 py-10 bg-white">
+      <h1 className="text-3xl text-gray-700 text-center mb-8">Oferta de Prácticas</h1>
 
-        <div className="mb-6 flex flex-col sm:flex-row sm:space-x-4 items-center">
-          <input
-            type="text"
-            placeholder="Busque su oferta..."
-            className="border p-2 rounded w-full sm:w-1/3 mb-2 sm:mb-0"
-          />
-          <select className="border p-2 rounded w-full sm:w-1/4 mb-2 sm:mb-0">
-            <option value="">Área</option>
-            <option value="value">Value</option>
-          </select>
-          <input type="date" className="border p-2 rounded w-full sm:w-1/6 mb-2 sm:mb-0" />
-          <input type="date" className="border p-2 rounded w-full sm:w-1/6 mb-2 sm:mb-0" />
-          <label className="flex items-center space-x-2 ml-2">
-            <input type="checkbox" />
-            <span>Oferta Activa</span>
-          </label>
-        </div>
+      <div className="mb-8 flex flex-col sm:flex-row sm:space-x-4 items-center text-gray-700">
+        <input
+          type="text"
+          placeholder="Buscar por título..."
+          className="border p-2 rounded w-full sm:w-1/3 mb-2 sm:mb-0"
+          value={searchTitle}
+          onChange={(e) => setSearchTitle(e.target.value)}
+        />
+
+        <select
+          className="border p-2 rounded w-full sm:w-1/4 mb-2 sm:mb-0"
+          value={selectedDegree}
+          onChange={(e) => setSelectedDegree(e.target.value)}
+        >
+          <option value="">Todos los grados</option>
+          {degrees?.map((degree: { id: string | number; name: string }) => (
+            <option key={degree.id} value={String(degree.id)}>
+              {degree.name}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="date"
+          className="border p-2 rounded w-full sm:w-1/6 mb-2 sm:mb-0"
+          value={startDateFilter}
+          onChange={(e) => setStartDateFilter(e.target.value)}
+        />
+        <input
+          type="date"
+          className="border p-2 rounded w-full sm:w-1/6 mb-2 sm:mb-0"
+          value={endDateFilter}
+          onChange={(e) => setEndDateFilter(e.target.value)}
+        />
       </div>
-    </>
+
+      <div className="space-y-10">
+        {filteredInternships.map((internship: InternshipResponseDTO) => (
+          <div key={internship.id} className="border-b pb-6 text-gray-700">
+            <h2 className="text-2xl font-bold text-blue-700 mb-2">
+              {internship.internshipTitle}
+            </h2>
+
+            <div className="text-sm text-gray-500 flex items-center mb-2">
+              <span className="mr-2">📅</span>
+              {new Date(internship.startDate).toLocaleDateString("es-ES", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </div>
+            <p className="text-gray-600 mb-4">
+              <span className="font-semibold">Entidad Convocante:</span>{" "}
+              {internship.company.name} - {internship.internshipLocation}
+            </p>
+
+            <p className="text-gray-700 mb-4 line-clamp-3">{internship.description}</p>
+
+            <Link href={`/cemu/internships/${internship.id}`}>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                LEER MÁS
+              </button>
+            </Link>
+          </div>
+        ))}
+      </div>
+    </div>
   );
-};
+}

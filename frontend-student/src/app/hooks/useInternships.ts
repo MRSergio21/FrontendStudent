@@ -21,6 +21,7 @@ export function useInternshipsQuery(initialData?: InternshipResponseDTO[]) {
   });
 }
 
+
 // 2) DETAIL QUERY
 export function useInternshipQuery(internshipId?: string) {
   return useQuery({
