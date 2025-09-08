@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useInternshipsQuery } from "@/app/hooks/useInternships";
 import { useDegreesQuery } from "@/app/hooks/useDegrees";
 import type { InternshipResponseDTO } from "@/app/models/internships.model";
@@ -36,12 +37,10 @@ export default function InternshipsPage() {
   if (error) return <p className="text-center text-red-500">Error cargando datos</p>;
 
   return (
-    <div className="mx-auto p-20 py-12 bg-white">
+    <div className="mx-auto p-18 py-10 bg-white">
       <h1 className="text-3xl text-gray-700 text-center mb-8">Oferta de Prácticas</h1>
 
-      {/* FILTROS */}
       <div className="mb-8 flex flex-col sm:flex-row sm:space-x-4 items-center text-gray-700">
-        {/* Búsqueda por título */}
         <input
           type="text"
           placeholder="Buscar por título..."
@@ -50,7 +49,6 @@ export default function InternshipsPage() {
           onChange={(e) => setSearchTitle(e.target.value)}
         />
 
-        {/* SELECT DE GRADOS */}
         <select
           className="border p-2 rounded w-full sm:w-1/4 mb-2 sm:mb-0"
           value={selectedDegree}
@@ -64,7 +62,6 @@ export default function InternshipsPage() {
           ))}
         </select>
 
-        {/* Rangos de fecha */}
         <input
           type="date"
           className="border p-2 rounded w-full sm:w-1/6 mb-2 sm:mb-0"
@@ -79,7 +76,6 @@ export default function InternshipsPage() {
         />
       </div>
 
-      {/* LISTA DE PRÁCTICAS */}
       <div className="space-y-10">
         {filteredInternships.map((internship: InternshipResponseDTO) => (
           <div key={internship.id} className="border-b pb-6 text-gray-700">
@@ -102,9 +98,11 @@ export default function InternshipsPage() {
 
             <p className="text-gray-700 mb-4 line-clamp-3">{internship.description}</p>
 
-            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-              LEER MÁS
-            </button>
+            <Link href={`/cemu/internships/${internship.id}`}>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                LEER MÁS
+              </button>
+            </Link>
           </div>
         ))}
       </div>
