@@ -15,7 +15,6 @@ export default function InternshipsPage() {
   const [startDateFilter, setStartDateFilter] = useState("");
   const [endDateFilter, setEndDateFilter] = useState("");
 
-  // Filtrado de prácticas por título, grado y rango de fechas
   const filteredInternships = useMemo(() => {
     if (!internships) return [];
 

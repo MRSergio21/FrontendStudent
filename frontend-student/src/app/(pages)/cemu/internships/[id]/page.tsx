@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { InternshipResponseDTO } from "@/app/models/internships.model";
+import CreateRequest from "@/app/components/Modal/Request/CreateRequest";
 
 async function getInternship(id: string): Promise<InternshipResponseDTO | null> {
   try {
     const res = await fetch(`${process.env.API_URL}/internships/${id}`, {
       cache: "no-store",
     });
-
     if (!res.ok) return null;
     return res.json();
   } catch (error) {
@@ -18,9 +18,11 @@ async function getInternship(id: string): Promise<InternshipResponseDTO | null> 
 export default async function InternshipDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = await params;
+  const { id } = params;
+  const internshipId = Number(id);
+
   const internship = await getInternship(id);
 
   if (!internship) return notFound();
@@ -28,11 +30,15 @@ export default async function InternshipDetailPage({
   return (
     <div className="p-18 py-10 grid grid-cols-3 gap-6 bg-white">
       <div className="col-span-2">
-        <h1 className="text-2xl font-bold mb-2 text-gray-700">{internship.internshipTitle}</h1>
-        <p className="text-blue-600 font-medium mb-4">{internship.company?.name}</p>
+        <h1 className="text-2xl font-bold mb-2 text-gray-700">
+          {internship.internshipTitle}
+        </h1>
+        <p className="text-blue-600 font-medium mb-4">
+          {internship.company?.name}
+        </p>
 
         <div className="flex flex-wrap gap-6 text-sm text-gray-600 mb-6">
-            <ul className="flex flex-row gap-6 list-none p-0 m-0">
+          <ul className="flex flex-row gap-6 list-none p-0 m-0">
             <li>
               <span className="font-semibold text-gray-500 mr-1">Ubicación:</span>
               {internship.internshipLocation}
@@ -53,7 +59,7 @@ export default async function InternshipDetailPage({
               <span className="font-semibold text-gray-500 mr-1">Tipo:</span>
               {internship.internshipType}
             </li>
-            </ul>
+          </ul>
         </div>
 
         <h2 className="text-xl font-semibold mt-6 mb-3 text-gray-700">Requisitos</h2>
@@ -84,9 +90,7 @@ export default async function InternshipDetailPage({
         <p className="mb-4">
           ¿Te interesa esta práctica profesional?, envia tu CV estaremos atentos a tu solicitud para su debido proceso.
         </p>
-        <button className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded">
-          ENVIAR CV
-        </button>
+        <CreateRequest internshipId={internshipId} />
       </div>
     </div>
   );
